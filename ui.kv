@@ -1,0 +1,157 @@
+<PalletsScreen>:
+	name: 'pallets'
+	
+	MDBoxLayout:
+		orientation: 'vertical'
+		
+		MDTopAppBar:
+			title: 'Seus Paletes'
+		
+		MDScrollView:
+			PalletsList:
+				controller: app.pallet_controller
+		
+	MDFloatingActionButton:
+		icon: 'plus'
+		pos_hint: {'top': .1, 'right': .95}
+		on_release: app.create_pallet()
+
+
+<PalletDetailsScreen>:
+	name: 'pallet_details'
+	
+	MDBoxLayout:
+		orientation: 'vertical'
+		
+		MDTopAppBar:
+			title: f'Palete | {root.code}'
+			left_action_items: [['arrow-left', lambda _: app.go_to('pallets', 'right')]]
+			right_action_items: [['dots-vertical', lambda _: print('TODO')]]
+		
+		MDWidget:
+			size_hint_y: None
+			height: '10dp'
+		
+		MDCard:
+			padding: '15dp'
+			size_hint: .9, None
+			pos_hint: {'center_x': .5}
+			
+			MDGridLayout:
+				cols: 2
+				spacing: 0, '15dp'
+				
+				MDLabel:
+					text: 'CRIADO EM'
+					bold: True
+					font_style: 'H6'
+					halign: 'center'
+				
+				MDLabel:
+					text: 'FINALIZADO EM'
+					bold: True
+					font_style: 'H6'
+					halign: 'center'
+				
+				MDLabel:
+					text: root.created_at
+					halign: 'center'
+				
+				MDLabel:
+					text: root.finished_at
+					halign: 'center'
+			
+		MDLabel:
+			text: 'Caixas Neste Palete:'
+			size_hint_y: None
+			bold: True
+			halign: 'center'
+			font_style: 'H6'
+		
+		MDScrollView:
+			BoxesList:
+				id: boxes_list
+				controller: app.box_controller
+
+	MDFloatingActionButton:
+		icon: 'plus'
+		pos_hint: {'top': .1, 'right': .95}
+		on_release: app.create_box(root.pallet_dto)
+
+
+<BoxDetailsScreen>:
+	name: 'box_details'
+	
+	MDBoxLayout:
+		orientation: 'vertical'
+		
+		MDTopAppBar:
+			title: f'Caixa | {root.code}'
+			left_action_items: [['arrow-left', lambda _: app.go_to('pallet_details', 'right')]]
+			right_action_items: [['dots-vertical', lambda _: print('TODO')]]
+		
+		MDWidget:
+			size_hint_y: None
+			height: '10dp'
+		
+		MDCard:
+			padding: '15dp'
+			size_hint: .9, None
+			pos_hint: {'center_x': .5}
+			
+			MDGridLayout:
+				cols: 2
+				spacing: 0, '15dp'
+				
+				MDLabel:
+					text: 'CRIADO EM'
+					bold: True
+					font_style: 'H6'
+					halign: 'center'
+				
+				MDLabel:
+					text: 'FINALIZADO EM'
+					bold: True
+					font_style: 'H6'
+					halign: 'center'
+				
+				MDLabel:
+					text: root.created_at
+					halign: 'center'
+				
+				MDLabel:
+					text: root.finished_at
+					halign: 'center'
+			
+		MDLabel:
+			text: 'Produtos Nesta Caixa:'
+			size_hint_y: None
+			bold: True
+			halign: 'center'
+			font_style: 'H6'
+		
+		MDScrollView:
+			MDList:
+				OneLineListItem:
+					text: 'Gay'
+
+	MDFloatingActionButton:
+		icon: 'plus'
+		pos_hint: {'top': .1, 'right': .95}
+		on_release: app.open_product_dialog()
+
+
+<AddProductDialogContent>:
+	orientation: 'vertical'
+	
+	MDTextField:
+		hint_text: 'Nome'
+		
+	MDTextField:
+		hint_text: 'Código de Barras'
+
+
+MDScreenManager:
+	PalletsScreen:
+	PalletDetailsScreen:
+	BoxDetailsScreen:
