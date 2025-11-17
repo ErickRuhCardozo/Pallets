@@ -1,15 +1,38 @@
-<PalletsScreen>:
-	name: 'pallets'
+<ModelItem>:
+	on_release: self.when_item_pressed(self.model)
 	
+	IconLeftWidgetWithoutTouch:
+		icon: root.display_icon
+
+
+<ModelRecycleView>:
+	viewclass: 'ModelItem'
+
+	RecycleBoxLayout:
+		orientation: 'vertical'
+		default_size: None, dp(50)
+		default_size_hint: 1, None
+		size_hint_y: None
+		height: self.minimum_height
+
+
+<PalletsScreen>:	
 	MDBoxLayout:
+		id: container
 		orientation: 'vertical'
 		
 		MDTopAppBar:
 			title: 'Seus Paletes'
 		
-		MDScrollView:
-			PalletsList:
-				controller: app.pallet_controller
+		MDSpinner:
+			id: pallets_spinner
+			size_hint: .1, .1
+			pos_hint: {'center_x': .5}
+		
+		ModelRecycleView:
+			controller: app.pallet_controller
+			item_icon: 'shipping-pallet'
+			when_item_pressed: app.inspect_pallet
 		
 	MDFloatingActionButton:
 		icon: 'plus'
@@ -17,15 +40,13 @@
 		on_release: app.create_pallet()
 
 
-<PalletDetailsScreen>:
-	name: 'pallet_details'
-	
+<DetailsScreen>:	
 	MDBoxLayout:
 		orientation: 'vertical'
 		
 		MDTopAppBar:
-			title: f'Palete | {root.code}'
-			left_action_items: [['arrow-left', lambda _: app.go_to('pallets', 'right')]]
+			title: f'{root.title} | {root.code}'
+			left_action_items: [['arrow-left', lambda _: app.go_to(root.go_back_to, 'right')]]
 			right_action_items: [['dots-vertical', lambda _: print('TODO')]]
 		
 		MDWidget:
@@ -62,96 +83,41 @@
 					halign: 'center'
 			
 		MDLabel:
-			text: 'Caixas Neste Palete:'
+			text: root.inside_text
 			size_hint_y: None
 			bold: True
 			halign: 'center'
 			font_style: 'H6'
 		
-		MDScrollView:
-			BoxesList:
-				id: boxes_list
-				controller: app.box_controller
+		ModelRecycleView:
+			controller: root.controller
+			item_icon: root.item_icon
+			when_item_pressed: root.when_item_pressed
 
 	MDFloatingActionButton:
 		icon: 'plus'
 		pos_hint: {'top': .1, 'right': .95}
-		on_release: app.create_box(root.pallet_dto)
-
-
-<BoxDetailsScreen>:
-	name: 'box_details'
-	
-	MDBoxLayout:
-		orientation: 'vertical'
-		
-		MDTopAppBar:
-			title: f'Caixa | {root.code}'
-			left_action_items: [['arrow-left', lambda _: app.go_to('pallet_details', 'right')]]
-			right_action_items: [['dots-vertical', lambda _: print('TODO')]]
-		
-		MDWidget:
-			size_hint_y: None
-			height: '10dp'
-		
-		MDCard:
-			padding: '15dp'
-			size_hint: .9, None
-			pos_hint: {'center_x': .5}
-			
-			MDGridLayout:
-				cols: 2
-				spacing: 0, '15dp'
-				
-				MDLabel:
-					text: 'CRIADO EM'
-					bold: True
-					font_style: 'H6'
-					halign: 'center'
-				
-				MDLabel:
-					text: 'FINALIZADO EM'
-					bold: True
-					font_style: 'H6'
-					halign: 'center'
-				
-				MDLabel:
-					text: root.created_at
-					halign: 'center'
-				
-				MDLabel:
-					text: root.finished_at
-					halign: 'center'
-			
-		MDLabel:
-			text: 'Produtos Nesta Caixa:'
-			size_hint_y: None
-			bold: True
-			halign: 'center'
-			font_style: 'H6'
-		
-		MDScrollView:
-			MDList:
-				OneLineListItem:
-					text: 'Gay'
-
-	MDFloatingActionButton:
-		icon: 'plus'
-		pos_hint: {'top': .1, 'right': .95}
-		on_release: app.open_product_dialog()
-
-
-<AddProductDialogContent>:
-	orientation: 'vertical'
-	
-	MDTextField:
-		hint_text: 'Nome'
-		
-	MDTextField:
-		hint_text: 'Código de Barras'
+		on_release: root.when_fab_press()
 
 
 MDScreenManager:
 	PalletsScreen:
-	PalletDetailsScreen:
-	BoxDetailsScreen:
+		name: 'pallets'
+
+	DetailsScreen:
+		name: 'pallet_details'
+		title: 'Palete'
+		go_back_to: 'pallets'
+		inside_text: 'Caixas Neste Palete:'
+		controller: app.box_controller
+		item_icon: 'dropbox'
+		when_item_pressed: app.inspect_box
+
+	DetailsScreen:
+		name: 'box_details'
+		title: 'Caixa'
+		go_back_to: 'pallet_details'
+		inside_text: 'Produtos Nesta Caixa:'
+		controller: app.product_controller
+		item_icon: 'food-takeout-box'
+		when_item_pressed: print()
