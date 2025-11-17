@@ -1,6 +1,7 @@
 from __future__ import annotations
 from datetime import date
 from typing import Optional, List
+from sqlalchemy.ext.asyncio import AsyncAttrs
 from sqlalchemy import (
 	String,
 	Integer,
@@ -15,7 +16,7 @@ from sqlalchemy.orm import (
 )
 
 
-class Model(DeclarativeBase):
+class Model(AsyncAttrs, DeclarativeBase):
 	__abstract__ = True
 	id: Mapped[int] = mapped_column(Integer, primary_key=True)
 
