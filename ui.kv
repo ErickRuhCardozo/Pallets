@@ -1,12 +1,20 @@
-<ModelItem>:
+<TrackedModelItem>:
 	on_release: self.when_item_pressed(self.model)
 	
 	IconLeftWidgetWithoutTouch:
-		icon: root.display_icon
+		icon: root.icon
 
 
-<ModelRecycleView>:
-	viewclass: 'ModelItem'
+<BoxProductItem>:
+	IconLeftWidgetWithoutTouch:
+		icon: 'food-takeout-box'
+	
+	ProductQuantityLabel:
+		text: root.quantity
+
+
+<TrackedModelView>:
+	viewclass: 'TrackedModelItem'
 
 	RecycleBoxLayout:
 		orientation: 'vertical'
@@ -16,7 +24,20 @@
 		height: self.minimum_height
 
 
-<PalletsScreen>:	
+<BoxProductView>:
+	viewclass: 'BoxProductItem'
+
+	RecycleBoxLayout:
+		orientation: 'vertical'
+		default_size: None, dp(60)
+		default_size_hint: 1, None
+		size_hint_y: None
+		height: self.minimum_height
+
+
+<PalletsScreen>:
+	name: 'pallets'
+
 	MDBoxLayout:
 		id: container
 		orientation: 'vertical'
@@ -29,7 +50,7 @@
 			size_hint: .1, .1
 			pos_hint: {'center_x': .5}
 		
-		ModelRecycleView:
+		TrackedModelView:
 			controller: app.pallet_controller
 			item_icon: 'shipping-pallet'
 			when_item_pressed: app.inspect_pallet
@@ -37,16 +58,20 @@
 	MDFloatingActionButton:
 		icon: 'plus'
 		pos_hint: {'top': .1, 'right': .95}
-		on_release: app.create_pallet()
+		on_release: app.add_pallet()
 
 
-<DetailsScreen>:	
+<PalletDetailsScreen>:
+	name: 'pallet_details'
+	controller: app.box_controller
+
 	MDBoxLayout:
+		id: container
 		orientation: 'vertical'
 		
 		MDTopAppBar:
-			title: f'{root.title} | {root.code}'
-			left_action_items: [['arrow-left', lambda _: app.go_to(root.go_back_to, 'right')]]
+			title: f'Palete | {root.code}'
+			left_action_items: [['arrow-left', lambda _: app.go_to('pallets', 'right')]]
 			right_action_items: [['dots-vertical', lambda _: print('TODO')]]
 		
 		MDWidget:
@@ -83,41 +108,100 @@
 					halign: 'center'
 			
 		MDLabel:
-			text: root.inside_text
+			text: 'Caixas Neste Palete:'
 			size_hint_y: None
 			bold: True
 			halign: 'center'
 			font_style: 'H6'
 		
-		ModelRecycleView:
-			controller: root.controller
-			item_icon: root.item_icon
-			when_item_pressed: root.when_item_pressed
+		MDSpinner:
+			id: loading_spinner
+			size_hint: .1, .1
+			pos_hint: {'center_x': .5}
+		
+		TrackedModelView:
+			id: modelview
+			controller: app.box_controller
+			item_icon: 'shipping-pallet'
+			when_item_pressed: app.inspect_box
 
 	MDFloatingActionButton:
 		icon: 'plus'
 		pos_hint: {'top': .1, 'right': .95}
-		on_release: root.when_fab_press()
+		on_release: app.add_box(root.model)
+
+
+<BoxDetailsScreen>:
+	name: 'box_details'
+	controller: app.boxproduct_controller
+
+	MDBoxLayout:
+		id: container
+		orientation: 'vertical'
+		
+		MDTopAppBar:
+			title: f'Caixa | {root.code}'
+			left_action_items: [['arrow-left', lambda _: app.go_to('pallet_details', 'right')]]
+			right_action_items: [['dots-vertical', lambda _: print('TODO')]]
+		
+		MDWidget:
+			size_hint_y: None
+			height: '10dp'
+		
+		MDCard:
+			padding: '15dp'
+			size_hint: .9, None
+			pos_hint: {'center_x': .5}
+			
+			MDGridLayout:
+				cols: 2
+				spacing: 0, '15dp'
+				
+				MDLabel:
+					text: 'CRIADO EM'
+					bold: True
+					font_style: 'H6'
+					halign: 'center'
+				
+				MDLabel:
+					text: 'FINALIZADO EM'
+					bold: True
+					font_style: 'H6'
+					halign: 'center'
+				
+				MDLabel:
+					text: root.created_at
+					halign: 'center'
+				
+				MDLabel:
+					text: root.finished_at
+					halign: 'center'
+			
+		MDLabel:
+			text: 'Produtos Nesta Caixa:'
+			size_hint_y: None
+			bold: True
+			halign: 'center'
+			font_style: 'H6'
+		
+		MDSpinner:
+			id: loading_spinner
+			size_hint: .1, .1
+			pos_hint: {'center_x': .5}
+		
+		BoxProductView:
+			id: modelview
+			controller: app.boxproduct_controller
+			item_icon: 'dropbox'
+			when_item_pressed: print
+
+	MDFloatingActionButton:
+		icon: 'plus'
+		pos_hint: {'top': .1, 'right': .95}
+		on_release: app.show_product_dialog
 
 
 MDScreenManager:
 	PalletsScreen:
-		name: 'pallets'
-
-	DetailsScreen:
-		name: 'pallet_details'
-		title: 'Palete'
-		go_back_to: 'pallets'
-		inside_text: 'Caixas Neste Palete:'
-		controller: app.box_controller
-		item_icon: 'dropbox'
-		when_item_pressed: app.inspect_box
-
-	DetailsScreen:
-		name: 'box_details'
-		title: 'Caixa'
-		go_back_to: 'pallet_details'
-		inside_text: 'Produtos Nesta Caixa:'
-		controller: app.product_controller
-		item_icon: 'food-takeout-box'
-		when_item_pressed: print()
+	PalletDetailsScreen:
+	BoxDetailsScreen:
