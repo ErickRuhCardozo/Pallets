@@ -158,13 +158,13 @@
 				spacing: 0, '15dp'
 				
 				MDLabel:
-					text: 'CRIADO EM'
+					text: 'CRIADA EM'
 					bold: True
 					font_style: 'H6'
 					halign: 'center'
 				
 				MDLabel:
-					text: 'FINALIZADO EM'
+					text: 'FINALIZADA EM'
 					bold: True
 					font_style: 'H6'
 					halign: 'center'
@@ -198,7 +198,30 @@
 	MDFloatingActionButton:
 		icon: 'plus'
 		pos_hint: {'top': .1, 'right': .95}
-		on_release: app.show_product_dialog
+		on_release: app.show_product_dialog()
+
+
+<ProductDialogContent>:
+	orientation: 'vertical'
+	size_hint_y: None
+	height: dp(150)
+	on_kv_post: print(self.parent)
+	
+	MDTextField:
+		id: name
+		hint_text: 'Nome'
+	
+	MDTextField:
+		id: ean
+		hint_text: 'Código de Barras'
+		input_type: 'number'
+		input_filter: 'int'
+	
+	MDTextField:
+		id: quantity
+		hint_text: 'Quantidade'
+		input_type: 'number'
+		input_filter: 'int'
 
 
 MDScreenManager:
