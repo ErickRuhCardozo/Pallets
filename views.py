@@ -5,6 +5,8 @@ from kivymd.uix.screen import MDScreen
 from kivymd.uix.label import MDLabel
 from kivymd.uix.recycleview import MDRecycleView
 from kivymd.uix.boxlayout import MDBoxLayout
+from kivymd.uix.dialog import MDDialog
+from kivymd.uix.button import MDFlatButton
 from kivy.clock import Clock
 from kivy.lang import Builder
 from kivymd.uix.list import (
@@ -131,12 +133,64 @@ class BoxDetailsScreen(DetailsScreen):
 	pass
 
 
+class ProductDialogContent(MDBoxLayout):
+	def fields_not_empty(self):
+		name, ean, quantity = self.field_values()
+		return (
+			name != '' and 
+			ean != '' and 
+			quantity != ''
+		)
+	
+	def field_values(self):
+		name = self.ids.name.text
+		ean = self.ids.ean.text
+		quantity = self.ids.quantity.text
+		return name, ean, quantity
+	
+	def focus_field(self):
+		self.ids.name.focus = True
+
+
+class ProductDialog(MDDialog):
+	model: BoxProduct = ObjectProperty(
+		BoxProduct(quantity=10)
+	)
+	
+	def __init__(self):
+		super().__init__(
+			title='Adicionar Produto',
+			type='custom',
+			content_cls=ProductDialogContent(),
+			pos_hint={'top': 1},
+			buttons=[
+				MDFlatButton(
+					text='Adicionar',
+					on_release=self.when_add_pressed
+				)
+			],
+		)
+	
+	def on_open(self):
+		self.content_cls.focus_field()
+		super().on_open()
+	
+	def when_add_pressed(self, button):
+		if self.can_add():
+			name, ean, quantity = self.content_cls.field_values()
+			App.get_running_app().add_product(name, ean, quantity)
+	
+	def can_add(self):
+		return self.content_cls.fields_not_empty()
+
+
 class App(MDApp):
 	def __init__(self, session_cls):
 		super().__init__()
 		self.pallet_controller = PalletController(session_cls)
 		self.box_controller = BoxController(session_cls)
 		self.boxproduct_controller = BoxProductController(session_cls)
+		self.product_dialog: ProductDialog = None
 		self.pallet_controller.listen('added', self.inspect_pallet)
 		self.box_controller.listen('added', self.inspect_box)
 
@@ -146,6 +200,7 @@ class App(MDApp):
 		return Builder.load_file('ui.kv')
 	
 	def on_start(self):
+		self.product_dialog = ProductDialog()
 		Clock.schedule_once(
 			lambda dt:
 				asyncio.create_task(
@@ -163,8 +218,15 @@ class App(MDApp):
 			self.box_controller.add_new()
 		)
 	
+	def add_product(self, name, ean, quantity):
+		print('Addig Product:', name, ean, quantity)
+		asyncio.create_task(
+			self.boxproduct_controller.add(name, ean, quantity)
+		)
+		self.product_dialog.dismiss()
+	
 	def show_product_dialog(self):
-		pass
+		self.product_dialog.open()
 	
 	def inspect_pallet(self, pallet):
 		self.box_controller.pallet = pallet
@@ -174,7 +236,6 @@ class App(MDApp):
 		asyncio.create_task(self.box_controller.list())
 	
 	def inspect_box(self, box):
-		print('inspecting box', box.id)
 		self.boxproduct_controller.box = box
 		screen = self.root.get_screen('box_details')
 		screen.model = box
