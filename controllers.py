@@ -5,6 +5,7 @@ from models import (
 	Pallet,
 	Box,
 	BoxProduct,
+	Product,
 )
 from sqlalchemy import (
 	select,
@@ -92,6 +93,7 @@ class BoxController(Controller):
 			code=code,
 			created_at=box.created_at
 		)
+		self.pallet.boxes.append(dto)
 		Clock.schedule_once(lambda _, b=dto: self.notify('added', b))
 	
 	async def list(self):
@@ -123,11 +125,38 @@ class BoxController(Controller):
 
 
 class BoxProductController(Controller):
-	box: BoxProduct = None
+	box: Box = None
+	
+	async def add(self, name, ean, quantity):
+		# TODO: Check if the product already is
+		# in the Box. If so, increment it's quantity
+		assert self.box is not None
+		
+		async with self.connect() as session:
+			box: Box = await session.merge(self.box)
+			products = await box.awaitable_attrs.products
+			products.append(
+				BoxProduct(
+					quantity=quantity,
+					product=Product(
+						name=name,
+						ean=ean
+					)
+				)
+			)
+			await session.commit()
+		
+		dto = BoxProduct(
+			quantity=quantity,
+			product=Product(
+				name=name,
+				ean=ean
+			)
+		)
+		Clock.schedule_once(lambda _, p=dto: self.notify('added', p))
 	
 	async def list(self):
-		if self.box == None:
-			raise Exception('Box not set!')
+		assert self.box is not None
 		
 		if self.box.products != []:
 			dtos = self.box.products
